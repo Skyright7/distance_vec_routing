@@ -30,4 +30,3 @@ if __name__ == '__main__':
     _thread.start_new_thread(myrouter4.startClient())
     _thread.start_new_thread(myrouter5.startClient())
     _thread.start_new_thread(myrouter6.startClient())
-    _thread.start_new_thread(myrouter1.trigerUpdate())

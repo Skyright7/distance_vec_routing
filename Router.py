@@ -29,11 +29,14 @@ class Router:
             data, addr = self.receiver.recvfrom(1024)
             if data != None:
                 data = data.decode("utf-8")
-                c_IP, c_port = addr
+                print(data)
+                data = utils.DatadeString(data)
+                c_ID = data[0]
+                c_IP = data[1]
+                c_port = data[2]
+                c_DV_vec = data[3]
+                update = data[4]
                 # 通过自定义的解析器把数据拆分出来
-                c_ID = utils.DatadeString(data)[0]
-                c_DV_vec = utils.DatadeString(data)[1]
-                update = utils.DatadeString(data)[2]
                 if update:
                     # 这里进入DV算法主体逻辑通过收到的DV跟from_ID更新自己的DV
                     self.DV_Algorithm(c_ID,c_DV_vec)
@@ -46,7 +49,7 @@ class Router:
                     self.CLoseTimer = time.time()
                     self.NoneCount += 1
                 else:
-                    dtime = time.time() - self.CLoseTimer
+                    dtime = int(time.time() - self.CLoseTimer)
                     if dtime >= 5:
                         break
                     else:
@@ -54,11 +57,12 @@ class Router:
         self.client_down()
 
     def startClient(self):
-        self.sendToServer(self.Id, self.DV_pairs, False)
+        # self.sendToServer(self.Id, self.DV_pairs, False)
+        self.sendToServer(self.Id, self.DV_pairs, True)
         self.revData()
 
     def sendToServer(self,from_ID,c_DV_vec,update:bool):
-        payload = utils.DatatoString(from_ID,c_DV_vec,update)
+        payload = utils.DatatoString(from_ID,self.ip,self.port,c_DV_vec,update)
         self.sender.sendto(payload.encode("utf-8"),(self.server_IP,self.server_port))
         # 这里写发送逻辑，将对应需要发送的信息打包通过server_ip和server_port发给server
 
@@ -88,13 +92,29 @@ class Router:
     def showDV(self):
         print(str(self.DV_pairs))
 
+    def doJoinFirst(self):
+        self.sendToServer(self.Id, self.DV_pairs, False)
+        data, addr = self.receiver.recvfrom(1024)
+        if data != None:
+            data = data.decode("utf-8")
+            data = utils.DatadeString(data)
+            c_ID = data[0]
+            c_IP = data[1]
+            c_port = data[2]
+            c_DV_vec = data[3]
+            update = data[4]
+            if update:
+                pass
+            else:
+                self.join(c_DV_vec)
 
-    def trigerUpdate(self):
-        # 发送一个update触发所有逻辑执行
-        self.sendToServer(self.Id, self.DV_pairs, True)
 
 # if __name__ == '__main__':
 #     # # test DV_al
 #     # myrouter1 = Router('u','127.0.0.1',5560,'127.0.0.1',5555)
 #     # myrouter1.DV_pairs = {'x':5,'w':3,'v':7,'y':-1,'z':-1}
 #     # myrouter1.DV_Algorithm('x',{'u':5,'w':4,'v':-1,'y':7,'z':9})
+
+if __name__ == '__main__':
+    myrouter1 = Router('u', '127.0.0.1', 5560, '127.0.0.1', 5555)
+    myrouter1.startClient()

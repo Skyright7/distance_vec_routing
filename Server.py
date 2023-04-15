@@ -6,6 +6,7 @@
 # 收到join之后，去表中找到这个router的信息
 # 之后将发过来的pairs返回给client表示其成功注册
 # 收到update之后，在表中找到这个跟这个router相邻的router，将新的消息转发过去
+import threading
 import time
 
 import Server_tabel_content
@@ -43,11 +44,14 @@ class Server:
             data, addr = self.receiver.recvfrom(1024)
             if data != None:
                 data = data.decode("utf-8")
-                c_IP, c_port = addr
+                print(data)
                 # 通过自定义的解析器把数据拆分出来
-                c_ID = utils.DatadeString(data)[0]
-                c_DV_vec = utils.DatadeString(data)[1]
-                update = utils.DatadeString(data)[2]
+                data = utils.DatadeString(data)
+                c_ID = data[0]
+                c_IP = data[1]
+                c_port = data[2]
+                c_DV_vec = data[3]
+                update = data[4]
                 if update:
                     self.update(c_ID,c_DV_vec)
                 else:
@@ -57,7 +61,7 @@ class Server:
                     self.CLoseTimer = time.time()
                     self.NoneCount += 1
                 else:
-                    dtime = time.time() - self.CLoseTimer
+                    dtime = int(time.time() - self.CLoseTimer)
                     if dtime >= 5:
                         break
                     else:
@@ -66,15 +70,15 @@ class Server:
 
     def sendBack(self,from_ID,send_IP,send_port,new_pairs,update:bool):
         # 通过自定义的编码器将数据表格打包成string
-        payload = utils.DatatoString(from_ID,new_pairs,update)
+        payload = utils.DatatoString(from_ID,send_IP,send_port,new_pairs,update)
+        # 发给要发的节点
         self.sender.sendto(payload.encode("utf-8"),(send_IP,send_port))
-        # 实际传输的数据只有 id,c_new_pairs,update:bool这三个打包发给send_IP,send_port对应的router
 
     def getbackway(self,c_new_pairs):
         backIDList = []
-        for i in c_new_pairs:
-            if i.values() != -1:
-                backIDList.append(i.keys())
+        for i,j in c_new_pairs.items():
+            if j != -1:
+                backIDList.append(i)
         return backIDList
 
     def update(self,c_ID, c_new_pairs):
@@ -102,7 +106,7 @@ class Server:
 
     def showDVTabel(self):
         showString = ''
-        for i,j in self.DV_tabel:
+        for i,j in self.DV_tabel.items():
             showString += '\t'
             showString += str(i)
             showString += '\t'
@@ -114,3 +118,14 @@ class Server:
             showString += '\t'
             showString += '\n'
         print(showString)
+
+
+
+
+if __name__ == '__main__':
+    # 传输方面测试通过
+    myserver = Server('127.0.0.1', 5555)
+    disvec = {'x': 5, 'w': 3, 'v': 7, 'y': -1, 'z': -1}
+    myserver.init_add_one_to_DV_tabel('u', disvec)
+    print(myserver.showDVTabel())
+    myserver.serverStart()

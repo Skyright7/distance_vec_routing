@@ -1,6 +1,6 @@
 # pairs的结构应该是 List[{routID:distance},]
 class tabel_content:
-    def __init__(self,ip:str,port:int,pairs):
+    def __init__(self,ip:str,port:int,pairs:dict):
         self.ip = ip
         self.port = port
         self.pairs = pairs
