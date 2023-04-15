@@ -15,3 +15,4 @@ if __name__ == '__main__':
 
 # 访问 https://www.jetbrains.com/help/pycharm/ 获取 PyCharm 帮助
 # 最终主线程用多线程起一个server，六个client然后开始进行update跟join
+# 所有节点的初始化数据通过读取一个配置文件的方法
