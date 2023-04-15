@@ -62,9 +62,11 @@ class Router:
         self.sender.sendto(payload.encode("utf-8"),(self.server_IP,self.server_port))
         # 这里写发送逻辑，将对应需要发送的信息打包通过server_ip和server_port发给server
 
-    def DV_Algorithm(self,from_id,c_DV_vec:map): # pairs的结构应该是 List[{routID:distance},]
+    # 测试完成，没啥问题
+    def DV_Algorithm(self,from_id,c_DV_vec): # pairs的结构应该是 List[{routID:distance},]
+        # self.showDV()
         to_distance = self.DV_pairs[from_id]
-        for key,value in c_DV_vec:
+        for key,value in c_DV_vec.items():
             if key == self.Id:
                 pass
             else:
@@ -73,9 +75,11 @@ class Router:
                     # 直接更新
                     self.DV_pairs[key] = to_distance + value
                 else:
-                    self.DV_pairs[key] = min(dis_origin,to_distance + value)
-        # self.showDV()
-        return
+                    if value == -1:
+                        pass
+                    else:
+                        self.DV_pairs[key] = min(dis_origin,to_distance + value)
+        self.showDV()
 
     def client_down(self):
         self.sender.close()
@@ -83,3 +87,14 @@ class Router:
 
     def showDV(self):
         print(str(self.DV_pairs))
+
+
+    def trigerUpdate(self):
+        # 发送一个update触发所有逻辑执行
+        self.sendToServer(self.Id, self.DV_pairs, True)
+
+# if __name__ == '__main__':
+#     # # test DV_al
+#     # myrouter1 = Router('u','127.0.0.1',5560,'127.0.0.1',5555)
+#     # myrouter1.DV_pairs = {'x':5,'w':3,'v':7,'y':-1,'z':-1}
+#     # myrouter1.DV_Algorithm('x',{'u':5,'w':4,'v':-1,'y':7,'z':9})

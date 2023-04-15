@@ -5,7 +5,10 @@ def DatatoString(from_ID,new_pairs,update:bool):
     result += '$'
     result += str(new_pairs)
     result += '$'
-    result += str(update)
+    if update:
+        result += 'True'
+    else:
+        result += 'False'
     return result
 
 def DatadeString(StringData:str):

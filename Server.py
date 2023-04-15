@@ -24,6 +24,9 @@ class Server:
         self.CLoseTimer = time.time()
         self.NoneCount = 0
 
+    def init_add_one_to_DV_tabel(self,routerID,DV_vec):
+        content = Server_tabel_content.tabel_content('',-1,DV_vec)
+        self.DV_tabel[routerID] = content
 
     def join(self,c_ID,c_IP,c_port):
         # 因为收到join了
@@ -95,6 +98,7 @@ class Server:
         self.sender.close()
         self.receiver.close()
         self.showDVTabel()
+        return
 
     def showDVTabel(self):
         showString = ''
