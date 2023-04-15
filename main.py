@@ -14,3 +14,4 @@ if __name__ == '__main__':
     print_hi('PyCharm')
 
 # 访问 https://www.jetbrains.com/help/pycharm/ 获取 PyCharm 帮助
+# 最终主线程用多线程起一个server，六个client然后开始进行update跟join
