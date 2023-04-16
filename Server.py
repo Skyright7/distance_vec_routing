@@ -6,8 +6,6 @@
 # 收到join之后，去表中找到这个router的信息
 # 之后将发过来的pairs返回给client表示其成功注册
 # 收到update之后，在表中找到这个跟这个router相邻的router，将新的消息转发过去
-import threading
-import time
 
 import Server_tabel_content
 import socket
@@ -22,7 +20,6 @@ class Server:
         self.receiver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.receiver.bind((self.ip,self.port))
         self.sender = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.CLoseTimer = time.time()
         self.NoneCount = 0
 
     def init_add_one_to_DV_tabel(self,routerID,DV_vec):
@@ -53,20 +50,17 @@ class Server:
                 c_DV_vec = data[3]
                 update = data[4]
                 if update:
-                    self.update(c_ID,c_DV_vec)
+                    if c_DV_vec != {}:
+                        self.update(c_ID,c_DV_vec)
+                    else:
+                        if self.NoneCount < 5:
+                            self.NoneCount += 1
+                        else:
+                            break
                 else:
                     self.join(c_ID, c_IP, c_port)
-            else:
-                if self.NoneCount == 0:
-                    self.CLoseTimer = time.time()
-                    self.NoneCount += 1
-                else:
-                    dtime = int(time.time() - self.CLoseTimer)
-                    if dtime >= 5:
-                        break
-                    else:
-                        pass
         self.serverDown()
+        return
 
     def sendBack(self,from_ID,send_IP,send_port,new_pairs,update:bool):
         # 通过自定义的编码器将数据表格打包成string
@@ -122,10 +116,10 @@ class Server:
 
 
 
-if __name__ == '__main__':
-    # 传输方面测试通过
-    myserver = Server('127.0.0.1', 5555)
-    disvec = {'x': 5, 'w': 3, 'v': 7, 'y': -1, 'z': -1}
-    myserver.init_add_one_to_DV_tabel('u', disvec)
-    print(myserver.showDVTabel())
-    myserver.serverStart()
+# if __name__ == '__main__':
+#     # 传输方面测试通过
+#     myserver = Server('127.0.0.1', 5555)
+#     disvec = {'x': 5, 'w': 3, 'v': 7, 'y': -1, 'z': -1}
+#     myserver.init_add_one_to_DV_tabel('u', disvec)
+#     print(myserver.showDVTabel())
+#     myserver.serverStart()

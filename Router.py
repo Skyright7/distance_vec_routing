@@ -5,7 +5,6 @@
 # 发送逻辑，接收逻辑（都分别分为Join关键字跟Update关键字）
 import socket
 import utils
-import time
 
 class Router:
     def __init__(self,id,ip,port,serverIP,serverPort):
@@ -18,8 +17,8 @@ class Router:
         self.receiver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.receiver.bind((self.ip,self.port))
         self.sender = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.CLoseTimer = time.time()
-        self.NoneCount = 0
+        self.repeatCount = 0
+        self.DV_before = {}
 
     def join(self,c_DV_vec):
         self.DV_pairs = c_DV_vec
@@ -29,7 +28,7 @@ class Router:
             data, addr = self.receiver.recvfrom(1024)
             if data != None:
                 data = data.decode("utf-8")
-                print(data)
+                # print(data)
                 data = utils.DatadeString(data)
                 c_ID = data[0]
                 c_IP = data[1]
@@ -38,23 +37,19 @@ class Router:
                 update = data[4]
                 # 通过自定义的解析器把数据拆分出来
                 if update:
-                    # 这里进入DV算法主体逻辑通过收到的DV跟from_ID更新自己的DV
-                    self.DV_Algorithm(c_ID,c_DV_vec)
-                    # 再将信息update发回给server
-                    self.sendToServer(self.Id,self.DV_pairs,True)
+                    if self.repeatCount < 25: # 这里其实取巧了，这个逻辑在client很多的时候会失效(这里可以换成timer)
+                        self.DV_before = self.DV_pairs
+                        self.DV_Algorithm(c_ID, c_DV_vec)
+                        if self.DV_before == self.DV_pairs:
+                            self.repeatCount += 1
+                        self.sendToServer(self.Id, self.DV_pairs, True)
+                    else:
+                        break
                 else:
                     self.join(c_DV_vec)
-            else:
-                if self.NoneCount == 0:
-                    self.CLoseTimer = time.time()
-                    self.NoneCount += 1
-                else:
-                    dtime = int(time.time() - self.CLoseTimer)
-                    if dtime >= 5:
-                        break
-                    else:
-                        pass
+        self.sendToServer(self.Id, {}, True)
         self.client_down()
+        return
 
     def startClient(self):
         # self.sendToServer(self.Id, self.DV_pairs, False)
@@ -88,6 +83,7 @@ class Router:
     def client_down(self):
         self.sender.close()
         self.receiver.close()
+        return
 
     def showDV(self):
         print(str(self.DV_pairs))
@@ -115,6 +111,6 @@ class Router:
 #     # myrouter1.DV_pairs = {'x':5,'w':3,'v':7,'y':-1,'z':-1}
 #     # myrouter1.DV_Algorithm('x',{'u':5,'w':4,'v':-1,'y':7,'z':9})
 
-if __name__ == '__main__':
-    myrouter1 = Router('u', '127.0.0.1', 5560, '127.0.0.1', 5555)
-    myrouter1.startClient()
+# if __name__ == '__main__':
+#     myrouter1 = Router('u', '127.0.0.1', 5560, '127.0.0.1', 5555)
+#     myrouter1.startClient()
