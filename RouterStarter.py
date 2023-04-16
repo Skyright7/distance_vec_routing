@@ -2,6 +2,7 @@ import time
 
 import Router
 import threading
+from configparser import ConfigParser
 
 class myThread (threading.Thread):
     def __init__(self, threadID, name, myrouter):
@@ -15,36 +16,26 @@ class myThread (threading.Thread):
 
 
 if __name__ == '__main__':
-    myrouter1 = Router.Router('u', '127.0.0.1', 5560, '127.0.0.1', 5555)
-    myrouter2 = Router.Router('x', '127.0.0.1', 5561, '127.0.0.1', 5555)
-    myrouter3 = Router.Router('w', '127.0.0.1', 5562, '127.0.0.1', 5555)
-    myrouter4 = Router.Router('v', '127.0.0.1', 5563, '127.0.0.1', 5555)
-    myrouter5 = Router.Router('y', '127.0.0.1', 5564, '127.0.0.1', 5555)
-    myrouter6 = Router.Router('z', '127.0.0.1', 5565, '127.0.0.1', 5555)
-    myrouter1.doJoinFirst()
-    myrouter2.doJoinFirst()
-    myrouter3.doJoinFirst()
-    myrouter4.doJoinFirst()
-    myrouter5.doJoinFirst()
-    myrouter6.doJoinFirst()
+    config = ConfigParser()
+    config.read('config.ini')
+    idList = config.sections()
+    n = len(idList)
+    ServerIp = '127.0.0.1'
+    ServerPort = 5555
+    routerList = []
+    for i in range(n):
+        routerList.append(Router.Router(idList[i],'127.0.0.1',5560+i,ServerIp,ServerPort))
+    for j in routerList:
+        j.doJoinFirst()
     time.sleep(5)
-    thread1 = myThread(1,'r1',myrouter1)
-    thread2 = myThread(2,'r2',myrouter2)
-    thread3 = myThread(3,'r3',myrouter3)
-    thread4 = myThread(4,'r4',myrouter4)
-    thread5 = myThread(5,'r5',myrouter5)
-    thread6 = myThread(6,'r6',myrouter6)
-    thread1.start()
-    thread2.start()
-    thread3.start()
-    thread4.start()
-    thread5.start()
-    thread6.start()
+    threadList = []
+    for k in range(n):
+        threadList.append(myThread(k,idList[k],routerList[k]))
 
-    thread1.join()
-    thread2.join()
-    thread3.join()
-    thread4.join()
-    thread5.join()
-    thread6.join()
+    for m in threadList:
+        m.start()
+
+    for n in threadList:
+        n.join()
+
 
