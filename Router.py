@@ -60,7 +60,10 @@ class Router:
             else:
                 dis_origin = self.DV_pairs[key]
                 if dis_origin == -1:
-                    self.DV_pairs[key] = to_distance + value
+                    if value == -1:
+                        pass
+                    else:
+                        self.DV_pairs[key] = to_distance + value
                 else:
                     if value == -1:
                         pass
