@@ -25,13 +25,15 @@ if __name__ == '__main__':
     routerList = []
     for i in range(n):
         routerList.append(Router.Router(idList[i],'127.0.0.1',5560+i,ServerIp,ServerPort))
+    print('Start Join')
     for j in routerList:
         j.doJoinFirst()
-    time.sleep(5)
+    time.sleep(5) # ensure all the router joined
+    print('All Join finished')
     threadList = []
     for k in range(n):
         threadList.append(myThread(k,idList[k],routerList[k]))
-
+    print('Start Updating')
     for m in threadList:
         m.start()
 

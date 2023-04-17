@@ -1,4 +1,4 @@
-# pairs的结构应该是 List[{routID:distance},]
+# pairs should be {routID:distance,}
 class tabel_content:
     def __init__(self,ip:str,port:int,pairs:dict):
         self.ip = ip

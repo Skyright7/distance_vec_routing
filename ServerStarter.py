@@ -9,5 +9,5 @@ if __name__ == '__main__':
     for i in idList:
         c = eval(config[i]['pairs'])
         myserver.init_add_one_to_DV_tabel(i, c)
-
+    print('Server Start......')
     myserver.serverStart()
